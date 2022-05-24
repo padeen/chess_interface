@@ -4,20 +4,19 @@
 
 Interface for frontend webapplications to communicate realtime to the backend chessengine over Phoenix channels.
 
-To start your Phoenix server:
+## Running
 
-  * Install dependencies with `mix deps.get`
-  * Install Node.js dependencies with `npm install` inside the `assets` directory
-  * Start Phoenix endpoint with `mix phx.server`
+Start server with `phx phx.server`
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+Add ChessEngine to the same parent folder as ChessInterface.
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+Communicate with channels over wscat.
 
-## Learn more
+Examples:
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+`wscat -c 'ws://localhost:4000/socket/websocket?vsn=2.0.0'`
+connected (press CTRL+C to quit)
+
+`["1","1","game:default","phx_join",{}]`
+
+`["1","2","game:default","start_board",{}]`
