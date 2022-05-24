@@ -2,7 +2,7 @@ defmodule ChessInterfaceWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "room:*", ChessInterfaceWeb.RoomChannel
+  channel "game:default", ChessInterfaceWeb.GameChannel
 
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
