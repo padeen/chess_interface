@@ -48,7 +48,7 @@ Add a new player
 
 Select colors
 
-`["1","4","game:Frank","select_colors",{"player1_color":"white","player2_color":"black"}]`
+`["2","4","game:Frank","select_colors",{"player1_color":"white","player2_color":"black"}]`
 
 Go back to the first terminal window to check inside the engine
 
