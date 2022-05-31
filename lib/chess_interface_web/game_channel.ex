@@ -33,7 +33,7 @@ defmodule ChessInterfaceWeb.GameChannel do
   end
 
   def handle_in("select_colors", payload, socket) do
-    %{"player1_color" => player1_color, "player2__color" => player2_color} = payload
+    %{"player1_color" => player1_color, "player2_color" => player2_color} = payload
     player1_color = String.to_existing_atom(player1_color)
     player2_color = String.to_existing_atom(player2_color)
 

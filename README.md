@@ -30,6 +30,10 @@ Add new player
 
 `["1","3","game:Joe","add_player",{"player2_name":"Hisaishi"}]`
 
+Select colors
+
+`["1","4","game:Joe","select_colors",{"player1_color":"black","player2_color":"white"}]`
+
 Start a second game channel
 
 `["2","1","game:Frank","phx_join",{}]`
@@ -41,6 +45,10 @@ Start a second game concurrently
 Add a new player
 
 `["2","3","game:Frank","add_player",{"player2_name":"Zappa"}]`
+
+Select colors
+
+`["1","4","game:Frank","select_colors",{"player1_color":"white","player2_color":"black"}]`
 
 Go back to the first terminal window to check inside the engine
 
