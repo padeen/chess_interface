@@ -6,17 +6,50 @@ Interface for frontend webapplications to communicate realtime to the backend ch
 
 ## Running
 
-Start server with `phx phx.server`
+Start server with `mix phx.server`
 
 Add ChessEngine to the same parent folder as ChessInterface.
 
-Communicate with channels over wscat.
+## Communicate with channels over wscat.
 
-Examples:
+Start repl with `iex -S mix phx.server`
+
+Open a second terminal window
 
 `wscat -c 'ws://localhost:4000/socket/websocket?vsn=2.0.0'`
-connected (press CTRL+C to quit)
 
-`["1","1","game:default","phx_join",{}]`
+Start a new game channel
 
-`["1","2","game:default","start_board",{}]`
+`["1","1","game:Joe","phx_join",{}]`
+
+Start new game
+
+`["1","2","game:Joe","new_game",{}]`
+
+Add new player
+
+`["1","3","game:Joe","add_player",{"player2_name":"Hisaishi"}]`
+
+Start a second game channel
+
+`["2","1","game:Frank","phx_join",{}]`
+
+Start a second game concurrently
+
+`["2","2","game:Frank","new_game",{}]`
+
+Add a new player
+
+`["2","3","game:Frank","add_player",{"player2_name":"Zappa"}]`
+
+Go back to the first terminal window to check inside the engine
+
+`via_joe = Game.via_tuple("Joe")`
+
+`via_frank = Game.via_tuple("Frank")`
+
+`:sys.get_state(via_joe)`
+
+`:sys.get_state(via_frank)`
+
+

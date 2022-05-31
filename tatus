@@ -1,0 +1,132 @@
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 45a50c0..9747068 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -6,17 +6,50 @@[m [mInterface for frontend webapplications to communicate realtime to the backend ch[m
+ [m
+ ## Running[m
+ [m
+[31m-Start server with `phx phx.server`[m
+[32m+[m[32mStart server with `mix phx.server`[m
+ [m
+ Add ChessEngine to the same parent folder as ChessInterface.[m
+ [m
+[31m-Communicate with channels over wscat.[m
+[32m+[m[32m## Communicate with channels over wscat.[m
+ [m
+[31m-Examples:[m
+[32m+[m[32mStart repl with `iex -S mix phx.server`[m
+[32m+[m
+[32m+[m[32mOpen a second terminal window[m
+ [m
+ `wscat -c 'ws://localhost:4000/socket/websocket?vsn=2.0.0'`[m
+[31m-connected (press CTRL+C to quit)[m
+ [m
+[31m-`["1","1","game:default","phx_join",{}]`[m
+[32m+[m[32mStart a new game channel[m
+[32m+[m
+[32m+[m[32m`["1","1","game:Joe","phx_join",{}]`[m
+[32m+[m
+[32m+[m[32mStart new game[m
+[32m+[m
+[32m+[m[32m`["1","2","game:Joe","new_game",{}]`[m
+[32m+[m
+[32m+[m[32mAdd new player[m
+[32m+[m
+[32m+[m[32m`["1","3","game:Joe","add_player",{"player2_name":"Hisaishi"}]`[m
+[32m+[m
+[32m+[m[32mStart a second game channel[m
+[32m+[m
+[32m+[m[32m`["2","1","game:Frank","phx_join",{}]`[m
+[32m+[m
+[32m+[m[32mStart a second game concurrently[m
+[32m+[m
+[32m+[m[32m`["2","2","game:Frank","new_game",{}]`[m
+[32m+[m
+[32m+[m[32mAdd a new player[m
+[32m+[m
+[32m+[m[32m`["2","3","game:Frank","add_player",{"player2_name":"Zappa"}]`[m
+[32m+[m
+[32m+[m[32mGo back to the first terminal window to check inside the engine[m
+[32m+[m
+[32m+[m[32m`via_joe = Game.via_tuple("Joe")`[m
+[32m+[m
+[32m+[m[32m`via_frank = Game.via_tuple("Frank")`[m
+[32m+[m
+[32m+[m[32m`:sys.get_state(via_joe)`[m
+[32m+[m
+[32m+[m[32m`:sys.get_state(via_frank)`[m
+[32m+[m
+ [m
+[31m-`["1","2","game:default","start_board",{}]`[m
+\ No newline at end of file[m
+[1mdiff --git a/lib/chess_interface_web/channels/user_socket.ex b/lib/chess_interface_web/channels/user_socket.ex[m
+[1mindex 327740b..13802c5 100644[m
+[1m--- a/lib/chess_interface_web/channels/user_socket.ex[m
+[1m+++ b/lib/chess_interface_web/channels/user_socket.ex[m
+[36m@@ -2,7 +2,7 @@[m [mdefmodule ChessInterfaceWeb.UserSocket do[m
+   use Phoenix.Socket[m
+ [m
+   ## Channels[m
+[31m-  channel "game:default", ChessInterfaceWeb.GameChannel[m
+[32m+[m[32m  channel "game:*", ChessInterfaceWeb.GameChannel[m
+ [m
+   # Socket params are passed from the client and can[m
+   # be used to verify and authenticate a user. After[m
+[1mdiff --git a/lib/chess_interface_web/game_channel.ex b/lib/chess_interface_web/game_channel.ex[m
+[1mindex 4dab560..976ca4d 100644[m
+[1m--- a/lib/chess_interface_web/game_channel.ex[m
+[1m+++ b/lib/chess_interface_web/game_channel.ex[m
+[36m@@ -1,14 +1,47 @@[m
+ defmodule ChessInterfaceWeb.GameChannel do[m
+   use ChessInterfaceWeb, :channel[m
+ [m
+[31m-  alias ChessEngine.Board[m
+[32m+[m[32m  alias ChessEngine.{Game, GameSupervisor}[m
+ [m
+[31m-  def join("game:default", _payload, socket) do[m
+[32m+[m[32m  def join("game:" <> _name, _payload, socket) do[m
+     {:ok, socket}[m
+   end[m
+ [m
+[31m-  def handle_in("start_board", _payload, socket) do[m
+[31m-    Board.start_new()[m
+[31m-    {:reply, :ok, socket}[m
+[32m+[m[32m  def handle_in("new_game", _payload, socket) do[m
+[32m+[m[32m    "game:" <> name = socket.topic[m
+[32m+[m
+[32m+[m[32m    case GameSupervisor.start_game(name) do[m
+[32m+[m[32m      {:ok, _pid} -> {:reply, :ok, socket}[m
+[32m+[m[32m      {:error, reason} -> {:reply, {:error, %{reason: inspect(reason)}}, socket}[m
+[32m+[m[32m    end[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  def handle_in("add_player", payload, socket) do[m
+[32m+[m[32m    %{"player2_name" => player2_name} = payload[m
+[32m+[m
+[32m+[m[32m    case Game.add_player(via(socket.topic), player2_name) do[m
+[32m+[m[32m      :ok ->[m
+[32m+[m[32m        broadcast!(socket, "player_added", %{message: "New player joined: " <> player2_name})[m
+[32m+[m[32m        {:noreply, socket}[m
+[32m+[m
+[32m+[m[32m      {:error, reason} ->[m
+[32m+[m[32m        {:reply, {:error, %{reason: inspect(reason)}}, socket}[m
+[32m+[m
+[32m+[m[32m      :error ->[m
+[32m+[m[32m        {:reply, :error, socket}[m
+[32m+[m[32m    end[m
+   end[m
+[32m+[m
+[32m+[m[32m  def handle_in("select_colors", payload, socket) do[m
+[32m+[m[32m    %{"player1_color" => player1_color, "player2__color" => player2_color} = payload[m
+[32m+[m[32m    player1_color = String.to_existing_atom(player1_color)[m
+[32m+[m[32m    player2_color = String.to_existing_atom(player2_color)[m
+[32m+[m
+[32m+[m[32m    case Game.select_colors(via(socket.topic), player1_color, player2_color) do[m
+[32m+[m[32m      :ok -> {:reply, :ok, socket}[m
+[32m+[m[32m      _ -> {:reply, :error, socket}[m
+[32m+[m[32m    end[m
+[32m+[m[32m  end[m
+[32m+[m
+[32m+[m[32m  defp via("game:" <> name), do: Game.via_tuple(name)[m
+ end[m
